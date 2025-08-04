@@ -6,7 +6,7 @@ For environment setup and installation instructions, please refer to the TimeLen
 Our code is based on their implementation.
 
 ### Download Pretrained Model & bsergb dataset
-1. Download Link : [x5 interpolation weights](https://drive.google.com/file/d/1drtXbuRH9w753gdgcUjTPukaPitbTKoD/view?usp=sharing)
+1. Download Link : [x5 interpolation weights](https://drive.google.com/file/d/1I3FrOLehKXAAFeGSVzX8CXo8jzezYk4d/view?usp=sharing)
 ```bash
 $ mkdir weights
 $ cd weights
