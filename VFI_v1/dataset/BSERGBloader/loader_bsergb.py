@@ -63,45 +63,70 @@ class loader_bsergb(BaseLoader):
         self.data_num = 10
         self.rgb_sampling_ratio =1
         
+    
     def samples_indexing(self):
         self.samples_list = []
-        # 이벤트 합친 version.
         for k in self.data_paths.keys():
             rgb_path, evs_path = self.data_paths[k]
-            for i_ind in range(0, len(self.indexes)-1):
-                rgb_sample = [rgb_path[i_ind],rgb_path[i_ind+1]]
-                # evs_sample = evs_path[i_ind*5:i_ind*5 + self.real_interp]
-                # print(evs_path)
-                evs_sample = evs_path[i_ind:i_ind+1]
+            evs_len = len(evs_path)
+            rgb_path = rgb_path[:evs_len]
+            indexes = list(range(0, len(rgb_path),
+                                 self.rgb_sampling_ratio))
+            if k in indexing_skip_ind:
+                skip_events = indexing_skip_ind[k]
+            else:
+                skip_events = []
+            skip_sample = False
+            for i_ind in range(0, len(indexes) - self.real_interp, 1 if self.training_flag else self.real_interp):
+                rgb_sample = [rgb_path[sind] for sind in indexes[i_ind:i_ind + self.real_interp + 1]]
+                evs_sample = evs_path[indexes[i_ind]:indexes[i_ind + self.real_interp]]
                 rgb_name = [os.path.splitext(os.path.split(rs)[-1])[0] for rs in rgb_sample]
                 for epath in evs_sample:
                     ename = os.path.split(epath)[-1]
-                self.samples_list.append([k, rgb_name, rgb_sample, evs_sample])
+                    if ename in skip_events:
+                        print(f"Skip sample: {k:50}\t {ename}")
+                        skip_sample = True
+                        break
+                if not skip_sample:
+                    self.samples_list.append([k, rgb_name, rgb_sample, evs_sample])
+                skip_sample = False
 
         return
+    # def samples_indexing(self):
+    #     self.samples_list = []
+    #     # 이벤트 합친 version.
+    #     for k in self.data_paths.keys():
+    #         rgb_path, evs_path = self.data_paths[k]
+    #         for i_ind in range(0, len(self.indexes)-1):
+    #             rgb_sample = [rgb_path[i_ind],rgb_path[i_ind+1]]
+    #             # evs_sample = evs_path[i_ind*5:i_ind*5 + self.real_interp]
+    #             # print(evs_path)
+    #             evs_sample = evs_path[i_ind:i_ind+1]
+    #             rgb_name = [os.path.splitext(os.path.split(rs)[-1])[0] for rs in rgb_sample]
+    #             for epath in evs_sample:
+    #                 ename = os.path.split(epath)[-1]
+    #             self.samples_list.append([k, rgb_name, rgb_sample, evs_sample])
+
+    #     return
         
     def events_reader(self, events_path, h, w, hs, ws):
-        ed = np.load(events_path[0])
-        evs_voxels =sample_events_to_grid(self.sub_div*5, h, w, np.float32(ed['x']),
+        evs_data = [np.load(ep) for ep in events_path]
+        evs_voxels = []
+       
+        for ed in evs_data:
+            evs_voxels.append(sample_events_to_grid(self.sub_div, h, w, np.float32(ed['x']),
                                                     np.float32(ed['y']), np.float32(ed['timestamp']), np.float32(ed['polarity']),
-                                                    hs, ws)
-        # print(evs_voxels)
-        return torch.tensor(evs_voxels)
-        # evs_data = [np.load(ep) for ep in events_path]
-        # evs_voxels = []
-        # print("Events Path", events_path, self.interp_ratio, self.real_interp)
-        # exit()
-        # for ed in evs_data:
-        #     evs_voxels.append(sample_events_to_grid(self.sub_div, h, w, np.float32(ed['x']),
-        #                                             np.float32(ed['y']), np.float32(ed['timestamp']), np.float32(ed['polarity']),
-        #                                             hs, ws))
-        # return torch.tensor(np.concatenate(evs_voxels, 0))
+                                                    hs, ws))
+        return torch.tensor(np.concatenate(evs_voxels, 0))
 
     def data_loading(self, paths):
+        
         folder_name, rgb_name, rgb_sample, evs_sample = paths
+
         im0 = self.imreader(rgb_sample[0])
         im1 = self.imreader(rgb_sample[-1])
         h, w = im0.shape[1:]
+        
 
         events = self.events_reader(evs_sample, h, w, 0, 0)
         return folder_name, rgb_name, im0, im1, events
