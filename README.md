@@ -28,7 +28,7 @@ $ cd ./losses/DISTS/DISTS_pytorch
 ```
 Place downloaded weights.pt under "./losses/DISTS/DISTS_pytorch" folder.
 
-Modify the dataset path in params/Paths/BDERGB.py to point to your ```Local PATH```.
+Modify the dataset path in ./losses/DISTS/DISTS_pytorch/DISTS_pt.py (63 row) to point to your ```Local PATH```.
 
 ## Inference model (x5 interpolation)
 ```bash
