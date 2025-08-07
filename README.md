@@ -20,7 +20,7 @@ $ cd dataset
 ```
 Place downloaded dataset under "./dataset" folder.
 
-Modify the dataset path in params/Paths/BDERGB.py to point to your ```Local PATH```.
+Modify the dataset path in params/Paths/BSERGB.py to point to your ```Local PATH```.
 
 3. Download Link: [Dists pytorch weight](https://github.com/dingkeyan93/DISTS/blob/master/DISTS_pytorch/weights.pt)
 ```bash
